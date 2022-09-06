@@ -1,15 +1,35 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: "Create Webhook"
+description: "Create a webhook config to a GitHub repository"
+author: "Karen Almog"
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  repo:
+    required: false
+    description: "The repository in which to install the webhook. Defaults to the repository running the action."
+    default: ${{ env.GITHUB_REPOSITORY }}
+  webhook_url:
     required: true
-    default: 'World'
-outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+    description: "The URL of the server that will receive the webhook POST requests."
+
+  content_type:
+    required: true
+    description: "The type of payload delivered in the body. Can be json or form. Default is json."
+    default: "json"
+
+  webhook_secret:
+    required: true
+    description: "The secret used to authenticate with the webhook API."
+
+  events:
+    description: "The events that trigger the webhook. Defaults are: check_run and push"
+    required: false
+    default: "[check_run, push]"
+
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
   args:
-    - ${{ inputs.who-to-greet }}
+    - ${{ inputs.webhook_url }}
+    - ${{ inputs.content_type }}
+    - ${{ inputs.webhook_secret }}
+    - ${{ inputs.events }}
+    - ${{ inputs.repository }}
