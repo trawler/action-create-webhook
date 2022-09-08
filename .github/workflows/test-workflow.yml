@@ -7,9 +7,14 @@ jobs:
   local_test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ./
       - name: "run locally"
-        uses: trawler/action-create-webhook@initial_action_code
+        uses: ./
         with:
           webhook_url: http://localhost:2020
-          content_type: json
-          webhook_secret: blabla
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          repository: mygh_user/testrepo
+          github_token: ${{ secrets.WEBHOOK_REPO_GITHUB_TOKEN }}

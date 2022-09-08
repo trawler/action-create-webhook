@@ -2,10 +2,19 @@ name: "Create Webhook"
 description: "Create a webhook config to a GitHub repository"
 author: "Karen Almog"
 inputs:
-  repo:
+  repository:
     required: false
     description: "The repository in which to install the webhook. Defaults to the repository running the action."
-    default: ${{ env.GITHUB_REPOSITORY }}
+
+  github_token:
+    required: false
+    description: "The github token to use for the destination repository."
+
+  webhook_name:
+    required: false
+    description: "The name of the webhook object in the github repository."
+    default: web
+
   webhook_url:
     required: true
     description: "The URL of the server that will receive the webhook POST requests."
@@ -19,17 +28,20 @@ inputs:
     required: true
     description: "The secret used to authenticate with the webhook API."
 
-  events:
-    description: "The events that trigger the webhook. Defaults are: check_run and push"
-    required: false
-    default: "[check_run, push]"
-
 runs:
-  using: "docker"
-  image: "Dockerfile"
-  args:
-    - ${{ inputs.webhook_url }}
-    - ${{ inputs.content_type }}
-    - ${{ inputs.webhook_secret }}
-    - ${{ inputs.events }}
-    - ${{ inputs.repository }}
+  using: "composite"
+  steps:
+    - name: install jsonnet
+      uses: kobtea/setup-jsonnet-action@v1
+
+    - name: jsonnet-render
+      id: jsonnet-render
+      uses: alexdglover/jsonnet-render@v2
+      with:
+        file: ./webhook.jsonnet
+        output_file: webhook.json
+        params: webhook_name=${{ inputs.webhook_name }} webhook_url=${{ inputs.webhook_url }} webhook_secret=${{ inputs.webhook_secret }} content_type=${{ inputs.content_type}}
+
+    - name: debug jsonnet
+      shell: bash
+      run: cat webhook.json
